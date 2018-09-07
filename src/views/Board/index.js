@@ -4,42 +4,82 @@ import connect from 'react-redux/es/connect/connect';
 import { withRouter } from 'react-router-dom';
 import { userSelector } from '../../selectors/auth';
 import { app } from 'firebase';
+import * as S from './styled';
+import Modal from '../Modal'
+import NewWaggerForm from '../../components/NewWagger';
+import { fetchWagersRequest,test } from '../../redux/wagers';
+import { activeWagersSelector } from '../../selectors/wagers';
 
 class Board extends Component {
-
+  state = {
+    isOpen: false,
+  };
   componentDidMount() {
-    const user = async () => app.auth().currentUser;
-    console.log(user);
+    this.props.fetchWagersRequest();
+
   }
 
+  toggleModal = () => {
+    this.setState(({isOpen})=> ({isOpen: !isOpen}))
+  }
+
+
+
+
   test = () => {
-    app().firestore().collection("wagers").add({
-      creator: "Alan",
-      opport: "Mathison",
-    })
-      .then(function(docRef) {
-        console.log("Document written with ID: ", docRef.id);
-      })
-      .catch(function(error) {
-        console.error("Error adding document: ", error);
-      });
+    const test = {
+      author: 'I',
+      stack: 'none',
+      data: 'sport',
+    }
+    app()
+      .firestore()
+      .collection('test')
+      .doc("LA")
+      .set({test: 'архитектор', top:'da'}).then(data=> console.log(data))
+
   }
 
   render() {
-    console.log(this.props.user);
+    const {activeWagers} = this.props;
+    console.log('active', activeWagers);
     return (
       <div>
-        <p onClick={this.test}>Board</p>
+        <div>
+          {activeWagers?
+            activeWagers.map((el)=>(
+            <p>{el.type}</p>
+          )
+            ):<p>her</p>}
+        </div>
+        <p onClick={this.props.test}>Board</p>
+        <S.AddWrapper onClick={this.toggleModal}>
+          <S.PlusWrapper>
+            <S.Horizontal/>
+            <S.Vertical/>
+          </S.PlusWrapper>
+        </S.AddWrapper>
+        {
+          this.state.isOpen &&
+          <Modal toggleModal={this.toggleModal}>
+            <NewWaggerForm />
+          </Modal>
+        }
       </div>
     );
   }
 }
 
 const mapStateToProps = (state) => ({
-  user: userSelector(state)
+  user: userSelector(state),
+  activeWagers: activeWagersSelector(state),
 });
 
+const mapDispatchToProps = {
+  fetchWagersRequest,
+  test
+};
 export default compose(
-  connect(mapStateToProps, null),
+  connect(mapStateToProps, mapDispatchToProps),
   withRouter
 )(Board);

@@ -45,21 +45,22 @@ export default function reducer(state = init, action) {
 
 // <<<WORKERS>>>
 function* onLogin({payload, history}) {
-  console.log(history);
   try {
     const {user: {uid, email, refreshToken}} = yield call(loginRequest,payload);
-    yield put({ type: LOGIN_SUCCESS});
     yield call(setupUser, uid, email, refreshToken);
+    yield put({ type: LOGIN_SUCCESS});
     history.push(routerPath.BOARD);
   } catch (error) {
     console.log(error);
     yield put({ type: LOGIN_FAILED, error });
   }
 }
-function* onSignUp({payload}) {
+function* onSignUp({payload, history}) {
   try {
-    const {uid, email} = yield call(signupRequest,payload);
+    const {user: {uid, email, refreshToken}} = yield call(signupRequest,payload);
+    yield call(setupUser, uid, email, refreshToken);
     yield put({ type: SIGNUP_SUCCESS});
+    history.push(routerPath.BOARD);
   } catch (error) {
     console.log(error);
     yield put({ type: SIGNUP_FAILED, error });
@@ -69,7 +70,7 @@ function* onSignUp({payload}) {
 
 // <<<ACTIONS>>>
 export const login = (creds, history) => ({ type: LOGIN_REQUEST, payload: creds, history });
-export const signUp = (creds) => ({ type: SIGNUP_REQUEST, payload: creds });
+export const signUp = (creds, history) => ({ type: SIGNUP_REQUEST, payload: creds });
 
 
 // <<<WATCHERS>>>
